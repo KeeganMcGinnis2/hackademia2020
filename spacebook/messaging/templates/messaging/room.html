@@ -6,6 +6,7 @@
          <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
         <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
         <style>
             body {
                 background-image: url("http://i.ytimg.com/vi/Kg4CRIDXkGg/maxresdefault.jpg");
@@ -31,7 +32,7 @@
                 list-style-type: none;
             } */
 
-            li {
+            #splash {
                 float: left;
                 list-style: none;
                 display: inline;
@@ -41,22 +42,51 @@
             #period {
                 margin: 0px;
             }
+
+            textarea {
+                background-color:#bababa; 
+                border: none; 
+                resize: none;
+                border-radius: 5px;
+                padding-left: 10px;
+                padding-top: 10px;
+            }
+
         </style>
     </head>
     <body>
+        <br>
+        <br>
+        <br>
+        <br>
         <div class="container h-100">
             <div class="d-flex justify-content-center h-100">
                 <div class="user_card">
                     <div id="chat-header">
                         <ul>
-                            <li><p>Welcome to {{ room_name }}. You are: </p></li>
-                            <li><p id="user_id">{{ user_id }}</p></li>
-                            <li><p>from the planet</p></li>
-                            <li><p id="planet">{{ planet }}</p></li>
-                            <li id="period"><p>.</p></li>
+                            <li id="splash"><p>Welcome to {{ room_name }}. You are: </p></li>
+                            <li id="splash"><p id="user_id">{{ user_id }}</p></li>
+                            <li id="splash"><p>from the planet</p></li>
+                            <li id="splash"><p id="planet">{{ planet }}</p></li>
+                            {% comment %} <li id="period"><p>.</p></li> {% endcomment %}
                         </ul>
                     </div>
-                    <textarea id="chat-log" cols="102" rows="20" style="background-color:#808184; border: none; resize: none;" readonly></textarea><br>
+                    <div id="chatlog2">
+                        <span v-for="chat in chats">
+                            <ul class="list-group" v-if="chat.me" style="margin-right: 2px; margin-left: 50px;">
+                                <li class="list-group-item" style="border-radius: 20px; background-color: #9cbce7; margin-right: 0px;">
+                                    [[ chat.text ]]
+                                </li>
+                            </ul>
+                            <ul v-else class="list-group" style="margin-right: 50px; margin-left: 2px;">
+                                <li class="list-group-item" style="border-radius: 20px; background-color: #d8d8d8; margin-right: 50px;">
+                                    [[ chat.text ]]
+                                </li>
+                            </ul>
+                            <br>
+                        </span>
+                    </div>
+                    {% comment %} <textarea id="chat-log" cols="102" rows="20" readonly></textarea><br> {% endcomment %}
                     <div class="input-group mb-3">
                     <input id="chat-message-input" type="text" class="form-control" aria-label="chat input" aria-describedby="button-addon2">
                         <div class="input-group-append">
@@ -69,8 +99,17 @@
         {{ room_name|json_script:"room-name" }}
 
         <script>
+            var app = new Vue({
+                el: '#chatlog2',
+                delimiters: ['[[', ']]'],
+                data:{
+                    chats: []
+                }
+            })
+        </script>
+        <script>
             // Mars actual delay is 760
-            const DELAYS = {'MERCURY': 190, 'VENUS': 360, 'EARTH': 496, 'MARS': 497, 'JUPITER': 2596, 'SATURN': 4783, 'URANUS': 9576, 'NEPTUNE': 14993, 'PLUTO': 19723};
+            const DELAYS = {'MERCURY': 190, 'VENUS': 360, 'EARTH': 496, 'MARS': 499, 'JUPITER': 2596, 'SATURN': 4783, 'URANUS': 9576, 'NEPTUNE': 14993, 'PLUTO': 19723};
             const planet = document.getElementById('planet').innerHTML;
             function sleep(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
@@ -80,7 +119,8 @@
                 //myplanet - receivedplane 
                 
                 await sleep(time * 1000);
-                document.querySelector('#chat-log').value += user_id.slice(0, -1).trim() + ": " + message + "\n";
+                // app.chats.push({ me: false, text: user_id.slice(0, -1).trim() + ": " + message + "\n"})
+                app.chats.push({ me: false, text: user_id + ": " + message + "\n"})
             }
 
             const roomName = JSON.parse(document.getElementById('room-name').textContent);
@@ -112,7 +152,9 @@
                 const message = messageInputDom.value;
                 const user_id = document.getElementById('user_id').innerHTML;
                 const planet = document.getElementById('planet').innerHTML;
-                document.querySelector('#chat-log').value += user_id.slice(0, -1).trim() + ": " + message + "\n";
+                // app.chats.push({me: true, text: user_id.slice(0, -1).trim() + ": " + message + "\n"});
+                app.chats.push({me: true, text: user_id + ": " + message + "\n"});
+                //document.querySelector('#chat-log').value += user_id.slice(0, -1).trim() + ": " + message + "\n";
                 chatSocket.send(JSON.stringify({
                     'message': message,
                     'user_id': user_id,
