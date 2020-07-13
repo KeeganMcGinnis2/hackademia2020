@@ -3,22 +3,96 @@
     <head>
         <meta charset="utf-8">
         <title>Chat Room</title>
+         <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <style>
+            body {
+                background-image: url("http://i.ytimg.com/vi/Kg4CRIDXkGg/maxresdefault.jpg");
+            }
+            .user_card {
+                height: 650;
+                width: 500px;
+                margin-top: auto;
+                margin-bottom: auto;
+                background: #808184;
+                position: relative;
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+                padding: 10px;
+                box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+                -webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+                -moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+                border-radius: 5px;
+            }
+
+            /* ul {
+                list-style-type: none;
+            } */
+
+            li {
+                float: left;
+                list-style: none;
+                display: inline;
+                margin: 2px;
+            }
+            
+            #period {
+                margin: 0px;
+            }
+        </style>
     </head>
     <body>
-        <p id="user_id">{{ user_id }}</p>
-        <textarea id="chat-log" cols="100" rows="20"></textarea><br>
-        <input id="chat-message-input" type="text" size="100"><br>
-        <input id="chat-message-submit" type="button" value="Send">
+        <div class="container h-100">
+            <div class="d-flex justify-content-center h-100">
+                <div class="user_card">
+                    <div id="chat-header">
+                        <ul>
+                            <li><p>Welcome to {{ room_name }}. You are: </p></li>
+                            <li><p id="user_id">{{ user_id }}</p></li>
+                            <li><p>from the planet</p></li>
+                            <li><p id="planet">{{ planet }}</p></li>
+                            <li id="period"><p>.</p></li>
+                        </ul>
+                    </div>
+                    <textarea id="chat-log" cols="102" rows="20" style="background-color:#808184; border: none; resize: none;" readonly></textarea><br>
+                    <div class="input-group mb-3">
+                    <input id="chat-message-input" type="text" class="form-control" aria-label="chat input" aria-describedby="button-addon2">
+                        <div class="input-group-append">
+                            <button class="btn btn-secondary" type="button" id="chat-message-submit">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         {{ room_name|json_script:"room-name" }}
+
         <script>
+            // Mars actual delay is 760
+            const DELAYS = {'MERCURY': 190, 'VENUS': 360, 'EARTH': 496, 'MARS': 497, 'JUPITER': 2596, 'SATURN': 4783, 'URANUS': 9576, 'NEPTUNE': 14993, 'PLUTO': 19723};
+            const planet = document.getElementById('planet').innerHTML;
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            async function delayMessage(time, message, user_id) {
+                //myplanet - receivedplane 
+                
+                await sleep(time * 1000);
+                document.querySelector('#chat-log').value += user_id.slice(0, -1).trim() + ": " + message + "\n";
+            }
+
             const roomName = JSON.parse(document.getElementById('room-name').textContent);
             const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomName + '/');
 
             chatSocket.onmessage = function(e) {
-                console.log(e);
+                // console.log(e);
                 const data = JSON.parse(e.data);
                 if (data.user_id != document.getElementById('user_id').innerHTML) {
-                    document.querySelector('#chat-log').value += (data.message + '\n');
+                    sleep_time = Math.abs(DELAYS[planet] - DELAYS[data.planet]);
+                    delayMessage(sleep_time, data.message, data.user_id);
+                    // document.querySelector('#chat-log').value += (data.message + '\n');
                 }
             };
 
@@ -36,11 +110,13 @@
             document.querySelector('#chat-message-submit').onclick = function(e) {
                 const messageInputDom = document.querySelector('#chat-message-input');
                 const message = messageInputDom.value;
-                const user_id = document.getElementById('user_id').innerHTML
-                document.querySelector('#chat-log').value += message;
+                const user_id = document.getElementById('user_id').innerHTML;
+                const planet = document.getElementById('planet').innerHTML;
+                document.querySelector('#chat-log').value += user_id.slice(0, -1).trim() + ": " + message + "\n";
                 chatSocket.send(JSON.stringify({
                     'message': message,
-                    'user_id': user_id
+                    'user_id': user_id,
+                    'planet': planet
                 }));
                 messageInputDom.value = '';
             };

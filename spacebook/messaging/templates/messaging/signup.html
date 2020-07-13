@@ -2,8 +2,8 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Spacebook</title>
-        <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+        <title>Sign Up</title>
+         <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
         <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <style>
@@ -11,8 +11,8 @@
                 background-image: url("http://i.ytimg.com/vi/Kg4CRIDXkGg/maxresdefault.jpg");
             }
             .user_card {
-                height: 400px;
-                width: 350px;
+                height: 650;
+                width: 500px;
                 margin-top: auto;
                 margin-bottom: auto;
                 background: #808184;
@@ -29,27 +29,17 @@
         </style>
     </head>
     <body>
-        <div class="container h-100">
+     <div class="container h-100">
             <div class="d-flex justify-content-center h-100">
                 <div class="user_card">
-                    What chat room would you like to enter?<br>
-                    <input id="room-name-input" type="text" class="form-control input_user" value="" placeholder="lobby"><br>
-                    <input id="room-name-submit" type="button" value="Enter">
+                    Sign Up
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit">Create an account</button>
+                    </form>
                 </div>
             </div>
-        </div>
-        <script>
-            document.querySelector('#room-name-input').focus();
-            document.querySelector('#room-name-input').onkeyup = function(e) {
-                if (e.keyCode === 13) {
-                    document.querySelector('#room-name-submit').click();
-                }
-            };
-
-            document.querySelector('#room-name-submit').onclick = function(e) {
-                var roomName = document.querySelector('#room-name-input').value;
-                window.location.pathname = '/chat/' + roomName + '/';
-            }
-        </script>
+     </div>
     </body>
 </html>
